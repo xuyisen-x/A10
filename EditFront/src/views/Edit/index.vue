@@ -1,5 +1,5 @@
 <template>
-  <div id="tiptapEditor">
+  <div id="tiptapEditor" style="width: 100%;">
     <Tiptap />
   </div>
 </template>
@@ -9,4 +9,5 @@ import Tiptap from '../../components/TipTap.vue'
 </script>
 
 <style scoped>
+
 </style>
