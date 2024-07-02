@@ -28,6 +28,7 @@
     "@tiptap/vue-3": "^2.4.0",
     "axios": "^1.7.2",
     "element-plus": "^2.7.4",
+    "katex": "^0.16.10",
     "pinia": "^2.1.7",
     "remixicon": "^4.3.0",
     "vue": "^3.4.21",
