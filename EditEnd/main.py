@@ -27,6 +27,7 @@ def getpolish():
     key = request.form.get("key")
     # 获取用户提问内容
     quesCont = request.form.get("cont")
+    # 在用户选中的文本前添加提问前缀
     askCont = "帮我润色下面这段话（请直接输出结果，不要在开头和结尾增加额外信息）:" + quesCont
     
     print(askCont)
