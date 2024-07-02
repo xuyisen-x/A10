@@ -289,54 +289,65 @@ export default {
       }
     },
     OCRImage() {
-      // 确保编辑器有选中的文本
-      if (!this.editor.state.selection.empty) {
+  // 确保编辑器有选中的对象（这里假设是图片）
+      if (/* 检查是否选中了图片 */) {
         this.editor.setEditable(false);
 
-        const { view, state } = this.editor
-        const { from, to } = view.state.selection
+        // 获取选中图片的 dataURL
+        getSelectedImageDataURL(this.editor).then(dataURL => {
+          // 发送 dataURL 到后端进行 OCR 处理
+          let response = sendToOCRBackend(dataURL); // 您需要实现这个函数
 
-        const text = state.doc.textBetween(from, to, '');
-
-        let response = getOCR("test","test",text);
-        console.log(response);
-        console.log(from);
-        response.then(
-            res => {
-              const newText = res?.answer;
-              if (newText) {
-                this.editor.chain().focus().insertContentAt(to, newText).run();
-              }
-              this.editor.setEditable(true);
+          response.then(res => {
+            const newText = res?.answer;
+            if (newText) {
+              // 这里假设您知道如何将光标定位到图片之后的位置并插入文本
+              // 这里的实现取决于您的编辑器库
+              this.editor.chain().focus().insertContent(/* 图片后的位置 */, newText).run();
             }
-        )
+            this.editor.setEditable(true);
+          }).catch(error => {
+            // 处理错误
+            console.error(error);
+            this.editor.setEditable(true);
+          });
+        }).catch(error => {
+          // 处理获取 dataURL 时的错误
+          console.error(error);
+          this.editor.setEditable(true);
+        });
       }
     },
     describeImage() {
-      // 确保编辑器有选中的文本
-      if (!this.editor.state.selection.empty) {
+  // 确保编辑器有选中的对象（这里假设是图片）
+      if (/* 检查是否选中了图片 */) {
         this.editor.setEditable(false);
 
-        const { view, state } = this.editor
-        const { from, to } = view.state.selection
+        // 获取选中图片的 dataURL
+        getSelectedImageDataURL(this.editor).then(dataURL => {
+          // 发送 dataURL 到后端进行 describe 处理
+          let response = sendToDescribeBackend(dataURL); // 您需要实现这个函数
 
-        const text = state.doc.textBetween(from, to, '');
-
-        let response = getDescribe("test","test",text);
-        console.log(response);
-        console.log(from);
-        response.then(
-            res => {
-              const newText = res?.answer;
-              if (newText) {
-                this.editor.chain().focus().insertContentAt(to, newText).run();
-              }
-              this.editor.setEditable(true);
+          response.then(res => {
+            const newText = res?.answer;
+            if (newText) {
+              // 这里假设您知道如何将光标定位到图片之后的位置并插入文本
+              // 这里的实现取决于您的编辑器库
+              this.editor.chain().focus().insertContent(/* 图片后的位置 */, newText).run();
             }
-        )
+            this.editor.setEditable(true);
+          }).catch(error => {
+            // 处理错误
+            console.error(error);
+            this.editor.setEditable(true);
+          });
+        }).catch(error => {
+          // 处理获取 dataURL 时的错误
+          console.error(error);
+          this.editor.setEditable(true);
+        });
       }
     },
-  },
 }
 </script>
 
