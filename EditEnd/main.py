@@ -132,6 +132,7 @@ def getOCR():
     try:
         response = erniebot.ChatCompletion.create(
             model='ernie-3.5',
+            # model = ?
             messages=[{'role': 'user', 'content':askCont}],
         )
         resText = response['result']
@@ -157,6 +158,7 @@ def getdescribe():
     try:
         response = erniebot.ChatCompletion.create(
             model='ernie-3.5',
+            # model = ?
             messages=[{'role': 'user', 'content':askCont}],
         )
         resText = response['result']

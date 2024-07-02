@@ -32,6 +32,14 @@
               <i class="ri-expand-right-line"></i>
               续写
             </button>
+            <button @click="extendText">
+              <i class="ri-expand-right-line"></i>
+              OCR
+            </button>
+            <button @click="extendText">
+              <i class="ri-expand-right-line"></i>
+              图片描述
+            </button>
           </bubble-menu>
           <floating-menu
             class="floating-menu"

@@ -65,7 +65,7 @@ export function getOCR(user:string, key: string, cont: string){
     formData.append("key", key);
     formData.append("cont", cont);
     return http.request({
-        url: '/getextend',
+        url: '/getOCR',
         method: 'post',
         data: formData
     })
@@ -77,7 +77,7 @@ export function getDescribe(user:string, key: string, cont: string){
     formData.append("key", key);
     formData.append("cont", cont);
     return http.request({
-        url: '/getextend',
+        url: '/getdescribe',
         method: 'post',
         data: formData
     })
