@@ -58,3 +58,27 @@ export function getExtend(user:string, key: string, cont: string){
         data: formData
     })
 }
+
+export function getOCR(user:string, key: string, cont: string){
+    let formData = new FormData();
+    formData.append("user", user);
+    formData.append("key", key);
+    formData.append("cont", cont);
+    return http.request({
+        url: '/getextend',
+        method: 'post',
+        data: formData
+    })
+}
+
+export function getDescribe(user:string, key: string, cont: string){
+    let formData = new FormData();
+    formData.append("user", user);
+    formData.append("key", key);
+    formData.append("cont", cont);
+    return http.request({
+        url: '/getextend',
+        method: 'post',
+        data: formData
+    })
+}
