@@ -32,12 +32,12 @@
               <i class="ri-expand-right-line"></i>
               续写
             </button>
-            <button @click="extendText">
-              <i class="ri-expand-right-line"></i>
+            <button @click="OCRImage">
+              <i class="ri-"></i>
               OCR
             </button>
-            <button @click="extendText">
-              <i class="ri-expand-right-line"></i>
+            <button @click="describeImage">
+              <i class="ri-"></i>
               图片描述
             </button>
           </bubble-menu>
@@ -80,7 +80,7 @@ import { getHierarchicalIndexes, TableOfContents } from '@tiptap-pro/extension-t
 import {BubbleMenu, Editor, EditorContent, FloatingMenu,} from '@tiptap/vue-3'
 import EditorButtons from "./EditorButtons.vue";
 
-import {getPolish, getAbbreviate, getExpand, getExtend} from "../api/";
+import {getPolish, getAbbreviate, getExpand, getExtend, getOCR, getDescribe} from "../api/";
 
 import 'remixicon/fonts/remixicon.css'
 import 'katex/dist/katex.min.css'
@@ -275,6 +275,54 @@ export default {
         const text = state.doc.textBetween(from, to, '');
 
         let response = getExtend("test","test",text);
+        console.log(response);
+        console.log(from);
+        response.then(
+            res => {
+              const newText = res?.answer;
+              if (newText) {
+                this.editor.chain().focus().insertContentAt(to, newText).run();
+              }
+              this.editor.setEditable(true);
+            }
+        )
+      }
+    },
+    OCRImage() {
+      // 确保编辑器有选中的文本
+      if (!this.editor.state.selection.empty) {
+        this.editor.setEditable(false);
+
+        const { view, state } = this.editor
+        const { from, to } = view.state.selection
+
+        const text = state.doc.textBetween(from, to, '');
+
+        let response = getOCR("test","test",text);
+        console.log(response);
+        console.log(from);
+        response.then(
+            res => {
+              const newText = res?.answer;
+              if (newText) {
+                this.editor.chain().focus().insertContentAt(to, newText).run();
+              }
+              this.editor.setEditable(true);
+            }
+        )
+      }
+    },
+    describeImage() {
+      // 确保编辑器有选中的文本
+      if (!this.editor.state.selection.empty) {
+        this.editor.setEditable(false);
+
+        const { view, state } = this.editor
+        const { from, to } = view.state.selection
+
+        const text = state.doc.textBetween(from, to, '');
+
+        let response = getDescribe("test","test",text);
         console.log(response);
         console.log(from);
         response.then(
