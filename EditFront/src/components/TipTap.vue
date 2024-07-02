@@ -33,11 +33,11 @@
               续写
             </button>
             <button @click="OCRImage">
-              <i class="ri-"></i>
+              <i class="ri-character-recognition-line"></i>
               OCR
             </button>
             <button @click="describeImage">
-              <i class="ri-"></i>
+              <i class="ri-file-image-line"></i>
               图片描述
             </button>
           </bubble-menu>
