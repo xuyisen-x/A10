@@ -115,6 +115,31 @@ def getextend():
         return jsonify(webDict)
     except:
         return "error"
+    
+@app.route('/getOCR', methods=["GET", "POST"])
+def getOCR():
+    # 获取用户名
+    username= request.form.get("user")
+    # 获取用户的访问令牌
+    key = request.form.get("key")
+    # 获取用户提问内容
+    quesCont = request.form.get("cont")
+    # 在用户选中的文本前添加提问前缀
+    askCont = "帮我润色下面这段话（请直接输出结果，不要在开头和结尾增加额外信息）:" + quesCont
+    
+    print(askCont)
+
+    try:
+        response = erniebot.ChatCompletion.create(
+            model='ernie-3.5',
+            messages=[{'role': 'user', 'content':askCont}],
+        )
+        resText = response['result']
+        print(resText)
+        webDict = {'answer': resText}
+        return jsonify(webDict)
+    except:
+        return "error"
 
 if __name__ == '__main__':
     app.run(host="127.0.0.1", port=8080, debug=True)
