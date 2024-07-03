@@ -132,7 +132,7 @@ def getOCR():
     try:
         response = erniebot.ChatCompletion.create(
             model='ernie-3.5',
-            # model = ?
+            # 将model替换为多模态小模型
             messages=[{'role': 'user', 'content':askCont}],
         )
         resText = response['result']
@@ -158,7 +158,7 @@ def getdescribe():
     try:
         response = erniebot.ChatCompletion.create(
             model='ernie-3.5',
-            # model = ?
+            # 将model替换为多模态小模型
             messages=[{'role': 'user', 'content':askCont}],
         )
         resText = response['result']
