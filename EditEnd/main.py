@@ -168,5 +168,83 @@ def getdescribe():
     except:
         return "error"
 
+@app.route('/getobjectdetection', methods=["GET", "POST"])
+def getobjectdetection():
+    # 获取用户名
+    username= request.form.get("user")
+    # 获取用户的访问令牌
+    key = request.form.get("key")
+    # 获取用户提问内容
+    quesCont = request.form.get("cont")
+    # 在用户选中的文本前添加提问前缀
+    askCont = "帮我识别下面这幅图片中的主要目标对象（请直接输出结果，不要在开头和结尾增加额外信息）:" + quesCont
+    
+    print(askCont)
+
+    try:
+        response = erniebot.ChatCompletion.create(
+            model='ernie-3.5',
+            # 将model替换为多模态小模型
+            messages=[{'role': 'user', 'content':askCont}],
+        )
+        resText = response['result']
+        print(resText)
+        webDict = {'answer': resText}
+        return jsonify(webDict)
+    except:
+        return "error"
+
+@app.route('/getaudiorecognition', methods=["GET", "POST"])
+def getaudiorecognition():
+    # 获取用户名
+    username= request.form.get("user")
+    # 获取用户的访问令牌
+    key = request.form.get("key")
+    # 获取用户提问内容
+    quesCont = request.form.get("cont")
+    # 在用户选中的文本前添加提问前缀
+    askCont = "帮我识别下面这段音频中的内容并转换为文字输出（请直接输出结果，不要在开头和结尾增加额外信息）:" + quesCont
+    
+    print(askCont)
+
+    try:
+        response = erniebot.ChatCompletion.create(
+            model='ernie-3.5',
+            # 将model替换为多模态小模型
+            messages=[{'role': 'user', 'content':askCont}],
+        )
+        resText = response['result']
+        print(resText)
+        webDict = {'answer': resText}
+        return jsonify(webDict)
+    except:
+        return "error"
+
+@app.route('/getvideosummary', methods=["GET", "POST"])
+def getvideosummary():
+    # 获取用户名
+    username= request.form.get("user")
+    # 获取用户的访问令牌
+    key = request.form.get("key")
+    # 获取用户提问内容
+    quesCont = request.form.get("cont")
+    # 在用户选中的文本前添加提问前缀
+    askCont = "帮我对下面这段视频的主要内容进行总结（请直接输出结果，不要在开头和结尾增加额外信息）:" + quesCont
+    
+    print(askCont)
+
+    try:
+        response = erniebot.ChatCompletion.create(
+            model='ernie-3.5',
+            # 将model替换为多模态小模型
+            messages=[{'role': 'user', 'content':askCont}],
+        )
+        resText = response['result']
+        print(resText)
+        webDict = {'answer': resText}
+        return jsonify(webDict)
+    except:
+        return "error"
+
 if __name__ == '__main__':
     app.run(host="127.0.0.1", port=8080, debug=True)
