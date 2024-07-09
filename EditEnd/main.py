@@ -4,7 +4,7 @@ from flask_cors import CORS
 
 import erniebot
 erniebot.api_type = 'aistudio'
-erniebot.access_token = '72addf70fd5b019442eb523108ccac95f165a03c'
+erniebot.access_token = '864047b2b8503537bd38de6b97c719cec8f911cd'
 
 DEBUG = True
 app = Flask(__name__)
