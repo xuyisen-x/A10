@@ -144,7 +144,7 @@ export function getObjectDetection(user: string, key: string, dataURL: string) {
     formData.append("cont", blob, "image.png");
 
     return http.request({
-        url: '/getdescribe',
+        url: '/getobjectdetection',
         method: 'post',
         data: formData
     });
@@ -174,7 +174,7 @@ export function getAudioRecognition(user: string, key: string, dataURL: string) 
     formData.append("cont", blob, "image.png");
 
     return http.request({
-        url: '/getdescribe',
+        url: '/getaudiorecognition',
         method: 'post',
         data: formData
     });
@@ -204,7 +204,7 @@ export function getVideoSummary(user: string, key: string, dataURL: string) {
     formData.append("cont", blob, "image.png");
 
     return http.request({
-        url: '/getdescribe',
+        url: '/getvideosummary',
         method: 'post',
         data: formData
     });

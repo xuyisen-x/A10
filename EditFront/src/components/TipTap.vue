@@ -92,10 +92,11 @@ import { getHierarchicalIndexes, TableOfContents } from '@tiptap-pro/extension-t
 import {BubbleMenu, Editor, EditorContent, FloatingMenu,} from '@tiptap/vue-3'
 import EditorButtons from "./EditorButtons.vue";
 
-import {getPolish, getAbbreviate, getExpand, getExtend, getOCR, getDecribe, detectObject, recognizeAudio, summarizeVideo} from "../api/";
+import {getPolish, getAbbreviate, getExpand, getExtend, getOCR, getDecribe, detectObject, recognizeAudio, summarizeVideo, getObjectDetection, getAudioRecognition, getVideoSummary} from "../api/";
 
 import 'remixicon/fonts/remixicon.css'
 import 'katex/dist/katex.min.css'
+import { getActivePinia } from 'pinia'
 
 export default {
   components: {
@@ -377,7 +378,7 @@ export default {
         // 获取选中图片的 dataURL
         getSelectedImageDataURL(this.editor).then(dataURL => {
           // 发送 dataURL 到后端进行 describe 处理
-          let response = getDescribe("test","test",dataURL); 
+          let response = getObjectDetection("test","test",dataURL); 
 
           response.then(res => {
             const newText = res?.answer;
@@ -409,7 +410,7 @@ export default {
         // 获取选中图片的 dataURL
         getSelectedImageDataURL(this.editor).then(dataURL => {
           // 发送 dataURL 到后端进行 describe 处理
-          let response = getDescribe("test","test",dataURL); 
+          let response = getAudioRecognition("test","test",dataURL); 
 
           response.then(res => {
             const newText = res?.answer;
@@ -441,7 +442,7 @@ export default {
         // 获取选中图片的 dataURL
         getSelectedImageDataURL(this.editor).then(dataURL => {
           // 发送 dataURL 到后端进行 describe 处理
-          let response = getDescribe("test","test",dataURL); 
+          let response = getVideoSummary("test","test",dataURL); 
 
           response.then(res => {
             const newText = res?.answer;
