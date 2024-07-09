@@ -80,8 +80,7 @@ import { getHierarchicalIndexes, TableOfContents } from '@tiptap-pro/extension-t
 import {BubbleMenu, Editor, EditorContent, FloatingMenu,} from '@tiptap/vue-3'
 import EditorButtons from "./EditorButtons.vue";
 
-// import {getPolish, getAbbreviate, getExpand, getExtend, getOCR, getDescribe} from "../api/";
-import {getPolish, getAbbreviate, getExpand, getExtend} from "../api/";
+import {getPolish, getAbbreviate, getExpand, getExtend, getOCR, getDescribe} from "../api/";
 
 import 'remixicon/fonts/remixicon.css'
 import 'katex/dist/katex.min.css'
@@ -289,62 +288,62 @@ export default {
         )
       }
     },
-  //   OCRImage() {
-  // // 确保编辑器有选中的对象（这里假设是图片）
-  //     if (!this.editor.state.selection.empty) {
-  //       this.editor.setEditable(false);
+    OCRImage() {
+  // 确保编辑器有选中的对象（这里假设是图片）
+      if (!this.editor.state.selection.empty) {
+        this.editor.setEditable(false);
 
-  //       // 获取选中图片的 dataURL
-  //       getSelectedImageDataURL(this.editor).then(dataURL => {
-  //         // 发送 dataURL 到后端进行 OCR 处理
-  //         let response = getOCR("test","test",dataURL); 
+        // 获取选中图片的 dataURL
+        getSelectedImageDataURL(this.editor).then(dataURL => {
+          // 发送 dataURL 到后端进行 OCR 处理
+          let response = getOCR("test","test",dataURL); 
 
-  //         response.then(res => {
-  //           const newText = res?.answer;
-  //           if (newText) {
-  //             this.editor.chain().focus().insertContent(/* 图片后的位置 */, newText).run();
-  //           }
-  //           this.editor.setEditable(true);
-  //         }).catch(error => {
-  //           // 处理错误
-  //           console.error(error);
-  //           this.editor.setEditable(true);
-  //         });
-  //       }).catch(error => {
-  //         // 处理获取 dataURL 时的错误
-  //         console.error(error);
-  //         this.editor.setEditable(true);
-  //       });
-  //     }
-  //   },
-  //   describeImage() {
-  // // 确保编辑器有选中的对象（这里假设是图片）
-  //     if (!this.editor.state.selection.empty) {
-  //       this.editor.setEditable(false);
+          response.then(res => {
+            const newText = res?.answer;
+            if (newText) {
+              this.editor.chain().focus().insertContent(/* 图片后的位置 */, newText).run();
+            }
+            this.editor.setEditable(true);
+          }).catch(error => {
+            // 处理错误
+            console.error(error);
+            this.editor.setEditable(true);
+          });
+        }).catch(error => {
+          // 处理获取 dataURL 时的错误
+          console.error(error);
+          this.editor.setEditable(true);
+        });
+      }
+    },
+    describeImage() {
+  // 确保编辑器有选中的对象（这里假设是图片）
+      if (!this.editor.state.selection.empty) {
+        this.editor.setEditable(false);
 
-  //       // 获取选中图片的 dataURL
-  //       getSelectedImageDataURL(this.editor).then(dataURL => {
-  //         // 发送 dataURL 到后端进行 describe 处理
-  //         let response = getDescribe("test","test",dataURL); 
+        // 获取选中图片的 dataURL
+        getSelectedImageDataURL(this.editor).then(dataURL => {
+          // 发送 dataURL 到后端进行 describe 处理
+          let response = getDescribe("test","test",dataURL); 
 
-  //         response.then(res => {
-  //           const newText = res?.answer;
-  //           if (newText) {
-  //             this.editor.chain().focus().insertContent(/* 图片后的位置 */, newText).run();
-  //           }
-  //           this.editor.setEditable(true);
-  //         }).catch(error => {
-  //           // 处理错误
-  //           console.error(error);
-  //           this.editor.setEditable(true);
-  //         });
-  //       }).catch(error => {
-  //         // 处理获取 dataURL 时的错误
-  //         console.error(error);
-  //         this.editor.setEditable(true);
-  //       });
-  //     }
-  //   },
+          response.then(res => {
+            const newText = res?.answer;
+            if (newText) {
+              this.editor.chain().focus().insertContent(/* 图片后的位置 */, newText).run();
+            }
+            this.editor.setEditable(true);
+          }).catch(error => {
+            // 处理错误
+            console.error(error);
+            this.editor.setEditable(true);
+          });
+        }).catch(error => {
+          // 处理获取 dataURL 时的错误
+          console.error(error);
+          this.editor.setEditable(true);
+        });
+      }
+    },
   }
 }
 </script>
