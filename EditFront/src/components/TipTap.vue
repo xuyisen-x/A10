@@ -13,7 +13,7 @@
           <bubble-menu
             class="bubble-menu"
             style="font-size: small"
-            :tippy-options="{ duration: 100 }"
+            :tippy-options="{ duration: 100}"
             :editor="editor"
           >
             <button @click="polishText">
@@ -92,7 +92,7 @@ import { getHierarchicalIndexes, TableOfContents } from '@tiptap-pro/extension-t
 import {BubbleMenu, Editor, EditorContent, FloatingMenu,} from '@tiptap/vue-3'
 import EditorButtons from "./EditorButtons.vue";
 
-import {getPolish, getAbbreviate, getExpand, getExtend, getOCR, getDecribe, detectObject, recognizeAudio, summarizeVideo, getObjectDetection, getAudioRecognition, getVideoSummary} from "../api/";
+import {getPolish, getAbbreviate, getExpand, getExtend, getOCR, getDecribe, getObjectDetection, getAudioRecognition, getVideoSummary} from "../api/";
 
 import 'remixicon/fonts/remixicon.css'
 import 'katex/dist/katex.min.css'
