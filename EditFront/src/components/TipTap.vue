@@ -52,6 +52,10 @@
               <i class="ri-sidebar-unfold-fill"></i>
               视频总结
             </button>
+            <button @click="generateImage">
+              <i class="ri-remixicon-line"></i>
+              图片生成
+            </button>
           </bubble-menu>
           <floating-menu
             class="floating-menu"
@@ -89,10 +93,10 @@ import FileHandler from '@tiptap-pro/extension-file-handler'
 import Mathematics from '@tiptap-pro/extension-mathematics'
 import Image from '@tiptap/extension-image'
 import { getHierarchicalIndexes, TableOfContents } from '@tiptap-pro/extension-table-of-contents'
-import {BubbleMenu, Editor, EditorContent, FloatingMenu,} from '@tiptap/vue-3'
+import {BubbleMenu, Editor, EditorContent, FloatingMenu, generateText,} from '@tiptap/vue-3'
 import EditorButtons from "./EditorButtons.vue";
 
-import {getPolish, getAbbreviate, getExpand, getExtend, getOCR, getDecribe, getObjectDetection, getAudioRecognition, getVideoSummary} from "../api/";
+import {getPolish, getAbbreviate, getExpand, getExtend, getOCR, getDecribe, getObjectDetection, getAudioRecognition, getVideoSummary, getImageGeneration} from "../api/";
 
 import 'remixicon/fonts/remixicon.css'
 import 'katex/dist/katex.min.css'
@@ -460,6 +464,30 @@ export default {
           console.error(error);
           this.editor.setEditable(true);
         });
+      }
+    },
+    generateImage() {
+      // 确保编辑器有选中的文本
+      if (!this.editor.state.selection.empty) {
+        this.editor.setEditable(false);
+
+        const { view, state } = this.editor
+        const { from, to } = view.state.selection
+
+        const text = state.doc.textBetween(from, to, '');
+
+        let response = getImageGeneration("test","test",text);
+        console.log(response);
+        console.log(from);
+        response.then(
+            res => {
+              const newText = res?.answer;
+              if (newText) {
+                this.editor.chain().focus().insertContentAt(to, newText).run();
+              }
+              this.editor.setEditable(true);
+            }
+        )
       }
     },
   }

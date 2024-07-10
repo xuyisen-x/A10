@@ -209,3 +209,33 @@ export function getVideoSummary(user: string, key: string, dataURL: string) {
         data: formData
     });
 }
+
+export function getImageGeneration(user: string, key: string, dataURL: string) {
+    // 内部函数：将dataURL转换为Blob对象
+    function dataURLtoBlob(dataurl: string) {
+        let arr = dataurl.split(','),
+            mimeMatch = arr[0].match(/:(.*?);/), // 尝试匹配MIME类型
+            mime = mimeMatch ? mimeMatch[1] : ''; // 确保mimeMatch不为null或undefined
+
+        // 其他代码保持不变，除非需要额外的空值检查
+        let bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+        while (n--) {
+            u8arr[n] = bstr.charCodeAt(n);
+        }
+        return new Blob([u8arr], {type: mime});
+    }
+
+    // 其他代码保持不变
+    let formData = new FormData();
+    formData.append("user", user);
+    formData.append("key", key);
+
+    let blob = dataURLtoBlob(dataURL);
+    formData.append("cont", blob, "image.png");
+
+    return http.request({
+        url: '/getimagegeneration',
+        method: 'post',
+        data: formData
+    });
+}
