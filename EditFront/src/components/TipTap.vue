@@ -305,39 +305,88 @@ export default {
         )
       }
     },
-    OCRImage() {
-  // 确保编辑器有选中的对象（这里假设是图片）
-      if (!this.editor.state.selection.empty) {
-        this.editor.setEditable(false);
+  //   OCRImage() {
+  // // 确保编辑器有选中的对象（这里假设是图片）
+  //     if (!this.editor.state.selection.empty) {
+  //       this.editor.setEditable(false);
 
   
-        const { view, state } = this.editor;
-        const { from, to } = view.state.selection;
+  //       const { view, state } = this.editor;
+  //       const { from, to } = view.state.selection;
 
-        // 获取选中图片的 dataURL
-        getSelectedImageDataURL(this.editor).then(dataURL => {
-          // 发送 dataURL 到后端进行 OCR 处理
-          let response = getOCR("test","test",dataURL); 
+  //       // 获取选中图片的 dataURL
+  //       getSelectedImageDataURL(this.editor).then(dataURL => {
+  //         // 发送 dataURL 到后端进行 OCR 处理
+  //         let response = getOCR(dataURL); 
+  //         console.log(response);
+  //         console.log(from);
+  //         response.then(res => {
+  //           const newText = res?.answer;
+  //           if (newText) {
+  //             this.editor.chain().focus().insertContent(to, newText).run();
+  //           }
+  //           this.editor.setEditable(true);
+  //         }).catch(error => {
+  //           // 处理错误
+  //           console.error(error);
+  //           this.editor.setEditable(true);
+  //         });
+  //       }).catch(error => {
+  //         // 处理获取 dataURL 时的错误
+  //         console.error(error);
+  //         this.editor.setEditable(true);
+  //       });
+  //     }
+  //   },
+    
+  OCRImage() {
+  // 确保编辑器有选中的对象
+      if (this.editor.state.selection.empty) {
+        console.log("没有选中任何内容");
+        return;
+      }
 
-          response.then(res => {
-            const newText = res?.answer;
-            if (newText) {
-              this.editor.chain().focus().insertContent(to, newText).run();
-            }
-            this.editor.setEditable(true);
-          }).catch(error => {
-            // 处理错误
-            console.error(error);
-            this.editor.setEditable(true);
-          });
-        }).catch(error => {
-          // 处理获取 dataURL 时的错误
-          console.error(error);
+      this.editor.setEditable(false);
+
+      const { view, state } = this.editor;
+      const { from, to } = view.state.selection;
+
+      // 在选中范围内查找图片节点并获取其 dataURL
+      let imageDataURL = null;
+      state.doc.nodesBetween(from, to, (node, pos) => {
+        if (node.type.name === 'image') {
+          imageDataURL = node.attrs.src;
+          return false; // 停止遍历
+        }
+      });
+
+      if (!imageDataURL) {
+        console.log("没有找到选中的图片");
+        this.editor.setEditable(true);
+        return;
+      }
+
+      // 发送 dataURL 到后端进行 OCR 处理
+      getOCR(imageDataURL)
+        .then(res => {
+          console.log(res);
+          console.log(from);
+          const newText = res;
+          if (newText) {
+            // 在选中区域后插入 OCR 结果
+            this.editor.chain().focus().insertContentAt(to, newText).run();
+          } else {
+            console.log("OCR 未返回有效文本");
+          }
+        })
+        .catch(error => {
+          console.error("OCR 处理过程中出错:", error);
+        })
+        .finally(() => {
           this.editor.setEditable(true);
         });
-      }
     },
-    
+
     describeImage() {
   // 确保编辑器有选中的对象（这里假设是图片）
       if (!this.editor.state.selection.empty) {

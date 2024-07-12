@@ -59,7 +59,7 @@ export function getExtend(user:string, key: string, cont: string){
     })
 }
 
-export function getOCR(user: string, key: string, dataURL: string) {
+export function getOCR(dataURL: string) {
     // 通常 dataURL 不会直接作为表单数据发送，除非你只发送一个字段包含这个URL
     // 假设你想要发送 user, key 和一个名为 'imageBase64' 的字段包含 dataURL 的 base64 部分
 
@@ -68,8 +68,6 @@ export function getOCR(user: string, key: string, dataURL: string) {
 
     // 构造 URL 编码的字符串
     const params = new URLSearchParams();
-    params.append('user', user);
-    params.append('key', key);
     params.append('cont', base64Part); // 注意这里只是 base64 编码的部分
 
     // 发送请求，使用 params.toString() 获取 URL 编码的字符串作为请求体

@@ -122,11 +122,7 @@ def getextend():
     
 @app.route('/getOCR', methods=["GET", "POST"])
 def getOCR():
-    # 获取用户名
-    username= request.form.get("user")
-    # 获取用户的访问令牌
-    key = request.form.get("key")
-    # 获取用户提问内容
+
     quesCont = request.form.get("cont")
     request_url = "https://aip.baidubce.com/rest/2.0/ocr/v1/general_basic"
     access_token = '24.d77e9c375cc2a6291df9e6e69f202960.2592000.1723340824.282335-93707685'
@@ -138,12 +134,17 @@ def getOCR():
     headers = {'content-type': 'application/x-www-form-urlencoded'}
     
     response = requests.post(request_url, data=params, headers=headers)
-    
+
     if response.status_code == 200:  # 检查响应状态码是否为200
-        return response.json()
+        json_response = response.json()
+        if 'words_result' in json_response:
+            words_list = [result['words'] for result in json_response['words_result']]
+            combined_text = ' '.join(words_list)
+            return combined_text
+        else:
+            return "No words found in the response"
     else:
-        print(f"请求失败，状态码：{response.status_code}")
-        return None
+        return f"Request failed with status code: {response.status_code}"
 
 
     
