@@ -4,6 +4,9 @@ from flask_cors import CORS
 
 import requests
 import base64
+# 小模型统一调度access_token
+# (Access token默认有效期为30天）from 2024.7.12 to 2024.8.11
+access_token = '24.956e2336bf8af44fc201c3bf932ec92e.2592000.1723383446.282335-93882240'
 
 import erniebot
 erniebot.api_type = 'aistudio'
@@ -148,8 +151,6 @@ def getOCR():
     else:
         return f"Request failed with status code: {response.status_code}"
 
-
-    
 @app.route('/getdescribe', methods=["GET", "POST"])
 def getdescribe():
     # 获取用户名
@@ -158,23 +159,25 @@ def getdescribe():
     key = request.form.get("key")
     # 获取用户提问内容
     quesCont = request.form.get("cont")
-    # 在用户选中的文本前添加提问前缀
-    askCont = "帮我描述下面这幅图片的内容（请直接输出结果，不要在开头和结尾增加额外信息）:" + quesCont
-    
-    print(askCont)
+    request_url = "https://aip.baidubce.com/rest/2.0/image-classify/v1/image-understanding/request"
+    access_token = '24.956e2336bf8af44fc201c3bf932ec92e.2592000.1723383446.282335-93882240'
 
-    try:
-        response = erniebot.ChatCompletion.create(
-            model='ernie-3.5',
-            # 将model替换为多模态小模型
-            messages=[{'role': 'user', 'content':askCont}],
-        )
-        resText = response['result']
-        print(resText)
-        webDict = {'answer': resText}
-        return jsonify(webDict)
-    except:
-        return "error"
+    params = {"image": quesCont}
+    request_url = request_url + "?access_token=" + access_token
+    headers = {'content-type': 'application/json'}
+    
+    response = requests.post(request_url, data=params, headers=headers)
+
+    if response.status_code == 200:  # 检查响应状态码是否为200
+        json_response = response.json()
+        if 'result' in json_response:
+            combined_text = json_response['result']['description']
+            return combined_text
+        else:
+            return "No words found in the response"
+    else:
+        return f"Request failed with status code: {response.status_code}"
+    
 
 @app.route('/getobjectdetection', methods=["GET", "POST"])
 def getobjectdetection():

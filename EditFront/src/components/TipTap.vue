@@ -354,37 +354,83 @@ export default {
     },
 
     describeImage() {
-  // 确保编辑器有选中的对象（这里假设是图片）
-      if (!this.editor.state.selection.empty) {
-        this.editor.setEditable(false);
+  // 确保编辑器有选中的对象
+      if (this.editor.state.selection.empty) {
+        console.log("没有选中任何内容");
+        return;
+      }
 
-        const { view, state } = this.editor;
-        const { from, to } = view.state.selection;
+      this.editor.setEditable(false);
 
+      const { view, state } = this.editor;
+      const { from, to } = view.state.selection;
 
-        // 获取选中图片的 dataURL
-        getSelectedImageDataURL(this.editor).then(dataURL => {
-          // 发送 dataURL 到后端进行 describe 处理
-          let response = getDescribe("test","test",dataURL); 
+      // 在选中范围内查找图片节点并获取其 dataURL
+      let imageDataURL = null;
+      state.doc.nodesBetween(from, to, (node, pos) => {
+        if (node.type.name === 'image') {
+          imageDataURL = node.attrs.src;
+          return false; // 停止遍历
+        }
+      });
 
-          response.then(res => {
-            const newText = res?.answer;
-            if (newText) {
-              this.editor.chain().focus().insertContent(to, newText).run();
-            }
-            this.editor.setEditable(true);
-          }).catch(error => {
-            // 处理错误
-            console.error(error);
-            this.editor.setEditable(true);
-          });
-        }).catch(error => {
-          // 处理获取 dataURL 时的错误
-          console.error(error);
+      if (!imageDataURL) {
+        console.log("没有找到选中的图片");
+        this.editor.setEditable(true);
+        return;
+      }
+
+      getDecribe("test", "test", imageDataURL)
+        .then(res => {
+          console.log(res);
+          console.log(from);
+          const newText = res;
+          if (newText) {
+            this.editor.chain().focus().insertContentAt(to, newText).run();
+          } else {
+            console.log("Describe 未返回有效文本");
+          }
+        })
+        .catch(error => {
+          console.error("Describe 处理过程中出错:", error);
+        })
+        .finally(() => {
           this.editor.setEditable(true);
         });
-      }
     },
+
+  //   describeImage() {
+  // // 确保编辑器有选中的对象（这里假设是图片）
+  //     if (!this.editor.state.selection.empty) {
+  //       this.editor.setEditable(false);
+
+  //       const { view, state } = this.editor;
+  //       const { from, to } = view.state.selection;
+
+
+  //       // 获取选中图片的 dataURL
+  //       getSelectedImageDataURL(this.editor).then(dataURL => {
+  //         // 发送 dataURL 到后端进行 describe 处理
+  //         let response = getDescribe("test","test",dataURL); 
+
+  //         response.then(res => {
+  //           const newText = res?.answer;
+  //           if (newText) {
+  //             this.editor.chain().focus().insertContent(to, newText).run();
+  //           }
+  //           this.editor.setEditable(true);
+  //         }).catch(error => {
+  //           // 处理错误
+  //           console.error(error);
+  //           this.editor.setEditable(true);
+  //         });
+  //       }).catch(error => {
+  //         // 处理获取 dataURL 时的错误
+  //         console.error(error);
+  //         this.editor.setEditable(true);
+  //       });
+  //     }
+  //   },
     detectObject() {
   // 确保编辑器有选中的对象（这里假设是图片）
       if (!this.editor.state.selection.empty) {
