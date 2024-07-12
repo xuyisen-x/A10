@@ -228,7 +228,7 @@ def getobjectdetection():
     # 构造请求体
     params = {
         "image": image_data,
-        "question": "这张图片里有什么？",
+        "question": "你现在是一个高级计算机视觉专家,专门从事目标检测任务。我需要你基于图像内容理解API的输出,执行精确的目标检测任务。",
         "output_CHN": True
     }
     

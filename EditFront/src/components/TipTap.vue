@@ -434,11 +434,11 @@ export default {
           if (newText) {
             this.editor.chain().focus().insertContentAt(to, newText).run();
           } else {
-            console.log("Describe 未返回有效文本");
+            console.log("Detect 未返回有效文本");
           }
         })
         .catch(error => {
-          console.error("Describe 处理过程中出错:", error);
+          console.error("Detect 处理过程中出错:", error);
         })
         .finally(() => {
           this.editor.setEditable(true);
