@@ -305,40 +305,6 @@ export default {
         )
       }
     },
-  //   OCRImage() {
-  // // 确保编辑器有选中的对象（这里假设是图片）
-  //     if (!this.editor.state.selection.empty) {
-  //       this.editor.setEditable(false);
-
-  
-  //       const { view, state } = this.editor;
-  //       const { from, to } = view.state.selection;
-
-  //       // 获取选中图片的 dataURL
-  //       getSelectedImageDataURL(this.editor).then(dataURL => {
-  //         // 发送 dataURL 到后端进行 OCR 处理
-  //         let response = getOCR(dataURL); 
-  //         console.log(response);
-  //         console.log(from);
-  //         response.then(res => {
-  //           const newText = res?.answer;
-  //           if (newText) {
-  //             this.editor.chain().focus().insertContent(to, newText).run();
-  //           }
-  //           this.editor.setEditable(true);
-  //         }).catch(error => {
-  //           // 处理错误
-  //           console.error(error);
-  //           this.editor.setEditable(true);
-  //         });
-  //       }).catch(error => {
-  //         // 处理获取 dataURL 时的错误
-  //         console.error(error);
-  //         this.editor.setEditable(true);
-  //       });
-  //     }
-  //   },
-    
   OCRImage() {
   // 确保编辑器有选中的对象
       if (this.editor.state.selection.empty) {
@@ -367,7 +333,7 @@ export default {
       }
 
       // 发送 dataURL 到后端进行 OCR 处理
-      getOCR(imageDataURL)
+      getOCR("test", "test", imageDataURL)
         .then(res => {
           console.log(res);
           console.log(from);

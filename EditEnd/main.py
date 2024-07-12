@@ -122,7 +122,11 @@ def getextend():
     
 @app.route('/getOCR', methods=["GET", "POST"])
 def getOCR():
-
+    # 获取用户名
+    username= request.form.get("user")
+    # 获取用户的访问令牌
+    key = request.form.get("key")
+    # 获取用户提问内容
     quesCont = request.form.get("cont")
     request_url = "https://aip.baidubce.com/rest/2.0/ocr/v1/general_basic"
     access_token = '24.d77e9c375cc2a6291df9e6e69f202960.2592000.1723340824.282335-93707685'
