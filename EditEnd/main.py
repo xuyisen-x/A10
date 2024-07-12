@@ -130,12 +130,10 @@ def getOCR():
     quesCont = request.form.get("cont")
     request_url = "https://aip.baidubce.com/rest/2.0/ocr/v1/general_basic"
     access_token = '24.d77e9c375cc2a6291df9e6e69f202960.2592000.1723340824.282335-93707685'
-    
-    # 以二进制方式打开图片文件
-    with open(quesCont, 'rb') as f:
-        img = base64.b64encode(f.read())
-    
-    params = {"image": img}
+
+    # img = base64.b64encode(quesCont)
+    img_base64 = base64.b64encode(quesCont).decode('utf-8')
+    params = {"image": img_base64}
     request_url = request_url + "?access_token=" + access_token
     headers = {'content-type': 'application/x-www-form-urlencoded'}
     
