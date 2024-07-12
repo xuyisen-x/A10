@@ -2,9 +2,13 @@ import erniebot.api_types
 from flask import Flask, json, request, jsonify
 from flask_cors import CORS
 
+import requests
+import base64
+
 import erniebot
 erniebot.api_type = 'aistudio'
 erniebot.access_token = '864047b2b8503537bd38de6b97c719cec8f911cd'
+
 
 DEBUG = True
 app = Flask(__name__)
@@ -124,23 +128,26 @@ def getOCR():
     key = request.form.get("key")
     # 获取用户提问内容
     quesCont = request.form.get("cont")
-    # 在用户选中的文本前添加提问前缀
-    askCont = "帮我识别下面这张图片中的文字内容（请直接输出识别到的文字内容，不要在开头和结尾增加额外信息）:" + quesCont
+    request_url = "https://aip.baidubce.com/rest/2.0/ocr/v1/general_basic"
+    access_token = '24.d77e9c375cc2a6291df9e6e69f202960.2592000.1723340824.282335-93707685'
     
-    print(askCont)
+    # 以二进制方式打开图片文件
+    with open(quesCont, 'rb') as f:
+        img = base64.b64encode(f.read())
+    
+    params = {"image": img}
+    request_url = request_url + "?access_token=" + access_token
+    headers = {'content-type': 'application/x-www-form-urlencoded'}
+    
+    response = requests.post(request_url, data=params, headers=headers)
+    
+    if response.status_code == 200:  # 检查响应状态码是否为200
+        return response.json()
+    else:
+        print(f"请求失败，状态码：{response.status_code}")
+        return None
 
-    try:
-        response = erniebot.ChatCompletion.create(
-            model='ernie-3.5',
-            # 将model替换为多模态小模型
-            messages=[{'role': 'user', 'content':askCont}],
-        )
-        resText = response['result']
-        print(resText)
-        webDict = {'answer': resText}
-        return jsonify(webDict)
-    except:
-        return "error"
+
     
 @app.route('/getdescribe', methods=["GET", "POST"])
 def getdescribe():
@@ -260,7 +267,7 @@ def getimagegeneration():
 
     try:
         response = erniebot.ChatCompletion.create(
-            model='ernie-3.5',
+            model='ernie-vilg-v2',
             messages=[{'role': 'user', 'content':askCont}],
         )
         resText = response['result']
