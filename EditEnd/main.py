@@ -264,31 +264,32 @@ def getobjectdetection():
     else:
         return f"Request failed with status code: {response.status_code}"
 
-@app.route('/getaudiorecognition', methods=["GET", "POST"])
+@app.route('/getaudiorecognition', methods=["POST"])
 def getaudiorecognition():
-    # 获取用户名
-    username= request.form.get("user")
-    # 获取用户的访问令牌
-    key = request.form.get("key")
-    # 获取用户提问内容
-    quesCont = request.form.get("cont")
-    # 在用户选中的文本前添加提问前缀
-    askCont = "帮我识别下面这段音频中的内容并转换为文字输出（请直接输出结果，不要在开头和结尾增加额外信息）:" + quesCont
-    
-    print(askCont)
+    # Get parameters from the request
+    user = request.form.get('user')
+    key = request.form.get('key')
+    audio_data = request.files.get('audio').read()
 
-    try:
-        response = erniebot.ChatCompletion.create(
-            model='ernie-3.5',
-            # 将model替换为多模态小模型
-            messages=[{'role': 'user', 'content':askCont}],
-        )
-        resText = response['result']
-        print(resText)
-        webDict = {'answer': resText}
-        return jsonify(webDict)
-    except:
-        return "error"
+
+    # Prepare the request body
+    body = {
+        "format": "pcm",
+        "rate": 16000,
+        "channel": 1,
+        "cuid": "your_unique_device_id",
+        "token": access_token,
+        "speech": base64.b64encode(audio_data).decode(),
+        "len": len(audio_data),
+        "dev_pid": 1537  # For Mandarin with punctuation
+    }
+
+    # Make the API request
+    api_url = 'http://vop.baidu.com/server_api'
+    headers = {'Content-Type': 'application/json'}
+    response = requests.post(api_url, json=body, headers=headers)
+
+    return jsonify(response.json())
 
 @app.route('/getvideosummary', methods=["GET", "POST"])
 def getvideosummary():

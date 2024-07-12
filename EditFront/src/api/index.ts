@@ -122,35 +122,46 @@ export function getObjectDetection(user: string, key: string, dataURL: string) {
     });
 }
 
-export function getAudioRecognition(user: string, key: string, dataURL: string) {
-    // 内部函数：将dataURL转换为Blob对象
-    function dataURLtoBlob(dataurl: string) {
-        let arr = dataurl.split(','),
-            mimeMatch = arr[0].match(/:(.*?);/), // 尝试匹配MIME类型
-            mime = mimeMatch ? mimeMatch[1] : ''; // 确保mimeMatch不为null或undefined
-
-        // 其他代码保持不变，除非需要额外的空值检查
-        let bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
-        while (n--) {
-            u8arr[n] = bstr.charCodeAt(n);
-        }
-        return new Blob([u8arr], {type: mime});
+export async function getAudioRecognition(user: string, key: string, dataURL: string) {
+    // First, get the access token
+    const tokenUrl = `https://aip.baidubce.com/oauth/2.0/token?grant_type=client_credentials&client_id=${key}&client_secret=${user}`;
+    const tokenResponse = await fetch(tokenUrl, { method: 'POST' });
+    const tokenData = await tokenResponse.json();
+    const accessToken = tokenData.access_token;
+  
+    // Convert dataURL to binary data
+    const binaryData = atob(dataURL.split(',')[1]);
+    const arrayBuffer = new ArrayBuffer(binaryData.length);
+    const uint8Array = new Uint8Array(arrayBuffer);
+    for (let i = 0; i < binaryData.length; i++) {
+      uint8Array[i] = binaryData.charCodeAt(i);
     }
-
-    // 其他代码保持不变
-    let formData = new FormData();
-    formData.append("user", user);
-    formData.append("key", key);
-
-    let blob = dataURLtoBlob(dataURL);
-    formData.append("cont", blob, "image.png");
-
-    return http.request({
-        url: '/getaudiorecognition',
-        method: 'post',
-        data: formData
+  
+    // Prepare the request body
+    const body = JSON.stringify({
+      format: 'pcm',
+      rate: 16000,
+      channel: 1,
+      cuid: 'your_unique_device_id',
+      token: accessToken,
+      speech: btoa(String.fromCharCode.apply(null, new Uint8Array(arrayBuffer))),
+      len: uint8Array.length,
+      dev_pid: 1537  // For Mandarin with punctuation
     });
-}
+  
+    // Make the API request
+    const apiUrl = 'http://vop.baidu.com/server_api';
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: body
+    });
+  
+    const result = await response.json();
+    return result;
+  }
 
 export function getVideoSummary(user: string, key: string, dataURL: string) {
     // 内部函数：将dataURL转换为Blob对象
