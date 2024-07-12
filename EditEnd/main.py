@@ -2,11 +2,12 @@ import erniebot.api_types
 from flask import Flask, json, request, jsonify
 from flask_cors import CORS
 
+import time
 import requests
 import base64
 # 小模型统一调度access_token
 # (Access token默认有效期为30天）from 2024.7.12 to 2024.8.11
-access_token = '24.956e2336bf8af44fc201c3bf932ec92e.2592000.1723383446.282335-93882240'
+access_token = '24.2700356a8fe52a6966ff99ff340232e0.2592000.1723386112.282335-93882240'
 
 import erniebot
 erniebot.api_type = 'aistudio'
@@ -134,7 +135,9 @@ def getOCR():
     request_url = "https://aip.baidubce.com/rest/2.0/ocr/v1/general_basic"
     access_token = '24.d77e9c375cc2a6291df9e6e69f202960.2592000.1723340824.282335-93707685'
 
-    params = {"image": quesCont}
+    params = {
+        "image": quesCont
+    }
     request_url = request_url + "?access_token=" + access_token
     headers = {'content-type': 'application/x-www-form-urlencoded'}
     
@@ -151,30 +154,59 @@ def getOCR():
     else:
         return f"Request failed with status code: {response.status_code}"
 
-@app.route('/getdescribe', methods=["GET", "POST"])
+@app.route('/getdescribe', methods=["POST"])
 def getdescribe():
-    # 获取用户名
+        # 获取用户名
     username= request.form.get("user")
     # 获取用户的访问令牌
     key = request.form.get("key")
-    # 获取用户提问内容
-    quesCont = request.form.get("cont")
+    # 获取请求体
+    request_data = request.get_json()
+    
+    # 获取图片数据
+    image_data = request_data.get("image")
+    
+    # 构造请求 URL
     request_url = "https://aip.baidubce.com/rest/2.0/image-classify/v1/image-understanding/request"
     access_token = '24.956e2336bf8af44fc201c3bf932ec92e.2592000.1723383446.282335-93882240'
-
-    params = {"image": quesCont}
-    request_url = request_url + "?access_token=" + access_token
-    headers = {'content-type': 'application/json'}
+    request_url = f"{request_url}?access_token={access_token}"
     
-    response = requests.post(request_url, data=params, headers=headers)
+    # 构造请求体
+    params = {
+        "image": image_data,
+        "question": "这张图片里有什么？",
+        "output_CHN": True
+    }
+    
+    headers = {'Content-Type': 'application/json'}
+    
+    # 发送请求
+    response = requests.post(request_url, json=params, headers=headers)
 
-    if response.status_code == 200:  # 检查响应状态码是否为200
+    if response.status_code == 200:
         json_response = response.json()
-        if 'result' in json_response:
-            combined_text = json_response['result']['description']
-            return combined_text
+        if 'result' in json_response and 'task_id' in json_response['result']:
+            task_id = json_response['result']['task_id']
+            
+            # 构造获取结果的请求
+            result_url = "https://aip.baidubce.com/rest/2.0/image-classify/v1/image-understanding/get-result"
+            result_url = f"{result_url}?access_token={access_token}"
+            
+            result_params = {"task_id": task_id}
+            
+            # 循环获取结果，直到处理完成
+            while True:
+                result_response = requests.post(result_url, json=result_params, headers=headers)
+                result_json = result_response.json()
+                
+                if result_json['result']['ret_code'] == 0:
+                    return result_json['result']['description']
+                elif result_json['result']['ret_code'] != 1:  # 如果不是处理中，就是出错了
+                    return f"Error: {result_json['result']['ret_msg']}"
+                
+                time.sleep(1)  # 等待1秒后再次请求
         else:
-            return "No words found in the response"
+            return "No task ID found in the response"
     else:
         return f"Request failed with status code: {response.status_code}"
     

@@ -96,7 +96,7 @@ import { getHierarchicalIndexes, TableOfContents } from '@tiptap-pro/extension-t
 import {BubbleMenu, Editor, EditorContent, FloatingMenu, generateText,} from '@tiptap/vue-3'
 import EditorButtons from "./EditorButtons.vue";
 
-import {getPolish, getAbbreviate, getExpand, getExtend, getOCR, getDecribe, getObjectDetection, getAudioRecognition, getVideoSummary, getImageGeneration} from "../api/";
+import {getPolish, getAbbreviate, getExpand, getExtend, getOCR, getDescribe, getObjectDetection, getAudioRecognition, getVideoSummary, getImageGeneration} from "../api/";
 
 import 'remixicon/fonts/remixicon.css'
 import 'katex/dist/katex.min.css'
@@ -380,7 +380,7 @@ export default {
         return;
       }
 
-      getDecribe("test", "test", imageDataURL)
+      getDescribe("test", "test", imageDataURL)
         .then(res => {
           console.log(res);
           console.log(from);

@@ -79,23 +79,24 @@ export function getOCR(user:string, key: string, dataURL: string) {
     });
 }
 
-export function getDecribe(user:string, key: string, dataURL: string) {
+export function getDescribe(user: string, key: string, dataURL: string) {
     const base64Part = dataURL.split(',')[1];
 
-    // 构造 URL 编码的字符串
-    const params = new URLSearchParams();
-    params.append("user", user);
-    params.append("key", key);
-    params.append('cont', base64Part); // 注意这里只是 base64 编码的部分
+    // 构造请求体
+    const requestBody = {
+        image: base64Part,
+        question: "这张图片里有什么？",
+        output_CHN: true
+    };
 
-    // 发送请求，使用 params.toString() 获取 URL 编码的字符串作为请求体
+    // 发送请求
     return http.request({
         url: '/getdescribe',
         method: 'post',
         headers: {
             'Content-Type': 'application/json'
         },
-        data: params.toString() // 使用 toString() 方法将 URLSearchParams 转换为字符串
+        data: JSON.stringify(requestBody)
     });
 }
 
