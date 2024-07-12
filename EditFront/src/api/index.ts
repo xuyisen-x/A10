@@ -70,7 +70,7 @@ export function getOCR(user: string, key: string, dataURL: string) {
     const params = new URLSearchParams();
     params.append('user', user);
     params.append('key', key);
-    params.append('imageBase64', base64Part); // 注意这里只是 base64 编码的部分
+    params.append('cont', base64Part); // 注意这里只是 base64 编码的部分
 
     // 发送请求，使用 params.toString() 获取 URL 编码的字符串作为请求体
     return http.request({
