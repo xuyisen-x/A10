@@ -102,32 +102,23 @@ export function getDescribe(user: string, key: string, dataURL: string) {
 
 
 export function getObjectDetection(user: string, key: string, dataURL: string) {
-    // 内部函数：将dataURL转换为Blob对象
-    function dataURLtoBlob(dataurl: string) {
-        let arr = dataurl.split(','),
-            mimeMatch = arr[0].match(/:(.*?);/), // 尝试匹配MIME类型
-            mime = mimeMatch ? mimeMatch[1] : ''; // 确保mimeMatch不为null或undefined
+    const base64Part = dataURL.split(',')[1];
 
-        // 其他代码保持不变，除非需要额外的空值检查
-        let bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
-        while (n--) {
-            u8arr[n] = bstr.charCodeAt(n);
-        }
-        return new Blob([u8arr], {type: mime});
-    }
+    // 构造请求体
+    const requestBody = {
+        image: base64Part,
+        question: "你现在是一个高级计算机视觉专家,专门从事目标检测任务。我需要你基于图像内容理解API的输出,执行精确的目标检测任务。",
+        output_CHN: true
+    };
 
-    // 其他代码保持不变
-    let formData = new FormData();
-    formData.append("user", user);
-    formData.append("key", key);
-
-    let blob = dataURLtoBlob(dataURL);
-    formData.append("cont", blob, "image.png");
-
+    // 发送请求
     return http.request({
         url: '/getobjectdetection',
         method: 'post',
-        data: formData
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        data: JSON.stringify(requestBody)
     });
 }
 

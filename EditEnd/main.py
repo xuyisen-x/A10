@@ -133,7 +133,6 @@ def getOCR():
     # 获取用户提问内容
     quesCont = request.form.get("cont")
     request_url = "https://aip.baidubce.com/rest/2.0/ocr/v1/general_basic"
-    access_token = '24.d77e9c375cc2a6291df9e6e69f202960.2592000.1723340824.282335-93707685'
 
     params = {
         "image": quesCont
@@ -168,7 +167,6 @@ def getdescribe():
     
     # 构造请求 URL
     request_url = "https://aip.baidubce.com/rest/2.0/image-classify/v1/image-understanding/request"
-    access_token = '24.956e2336bf8af44fc201c3bf932ec92e.2592000.1723383446.282335-93882240'
     request_url = f"{request_url}?access_token={access_token}"
     
     # 构造请求体
@@ -211,31 +209,60 @@ def getdescribe():
         return f"Request failed with status code: {response.status_code}"
     
 
-@app.route('/getobjectdetection', methods=["GET", "POST"])
+@app.route('/getobjectdetection', methods=["POST"])
 def getobjectdetection():
-    # 获取用户名
+        # 获取用户名
     username= request.form.get("user")
     # 获取用户的访问令牌
     key = request.form.get("key")
-    # 获取用户提问内容
-    quesCont = request.form.get("cont")
-    # 在用户选中的文本前添加提问前缀
-    askCont = "帮我识别下面这幅图片中的主要目标对象（请直接输出结果，不要在开头和结尾增加额外信息）:" + quesCont
+    # 获取请求体
+    request_data = request.get_json()
     
-    print(askCont)
+    # 获取图片数据
+    image_data = request_data.get("image")
+    
+    # 构造请求 URL
+    request_url = "https://aip.baidubce.com/rest/2.0/image-classify/v1/image-understanding/request"
+    request_url = f"{request_url}?access_token={access_token}"
+    
+    # 构造请求体
+    params = {
+        "image": image_data,
+        "question": "这张图片里有什么？",
+        "output_CHN": True
+    }
+    
+    headers = {'Content-Type': 'application/json'}
+    
+    # 发送请求
+    response = requests.post(request_url, json=params, headers=headers)
 
-    try:
-        response = erniebot.ChatCompletion.create(
-            model='ernie-3.5',
-            # 将model替换为多模态小模型
-            messages=[{'role': 'user', 'content':askCont}],
-        )
-        resText = response['result']
-        print(resText)
-        webDict = {'answer': resText}
-        return jsonify(webDict)
-    except:
-        return "error"
+    if response.status_code == 200:
+        json_response = response.json()
+        if 'result' in json_response and 'task_id' in json_response['result']:
+            task_id = json_response['result']['task_id']
+            
+            # 构造获取结果的请求
+            result_url = "https://aip.baidubce.com/rest/2.0/image-classify/v1/image-understanding/get-result"
+            result_url = f"{result_url}?access_token={access_token}"
+            
+            result_params = {"task_id": task_id}
+            
+            # 循环获取结果，直到处理完成
+            while True:
+                result_response = requests.post(result_url, json=result_params, headers=headers)
+                result_json = result_response.json()
+                
+                if result_json['result']['ret_code'] == 0:
+                    return result_json['result']['description']
+                elif result_json['result']['ret_code'] != 1:  # 如果不是处理中，就是出错了
+                    return f"Error: {result_json['result']['ret_msg']}"
+                
+                time.sleep(1)  # 等待1秒后再次请求
+        else:
+            return "No task ID found in the response"
+    else:
+        return f"Request failed with status code: {response.status_code}"
 
 @app.route('/getaudiorecognition', methods=["GET", "POST"])
 def getaudiorecognition():
