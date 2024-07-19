@@ -1,58 +1,103 @@
 <template>
-  <div v-if="editor" class="common-layout" style="width: 100vw; height: 100vh;display: flex;flex-direction: column;">
+  <div v-if="editor" class="common-layout" style="width: 100vw; height: 100vh;">
     <div class="control-group">
-      <EditorButtons :editor="editor" />
+      <EditorButtons :editor="editor" @childEvent="handleChildEvent" />
     </div>
-    <el-container style="flex:1;height: 95%">
+    <el-container class="main-container">
       <el-aside style="height: 100%;">
-        <h3 style="margin-top: 0;">大纲</h3>
-        <div id="table-of-contents" style="height: 90%; overflow-y: auto;"/>
+        <h3 id="title-of-contents">大纲</h3>
+        <div id="table-of-contents"/>
       </el-aside>
       <el-main style="height: 100%; overflow-y: auto;">
         <div class="editor-container">
-          <bubble-menu
-            class="bubble-menu"
+          <BubbleMenu
+            class="bubble-menu bm1"
             style="font-size: small"
             :tippy-options="{ duration: 100 }"
             :editor="editor"
+            :should-show="props => {
+                return !props.editor.isActive('image') && props.from !== props.to
+            }"
           >
-            <button @click="polishText">
-              <i class="ri-magic-line"></i>
-              润色
-            </button>
-            <button @click="abbreviateText">
-              <i class="ri-collapse-horizontal-line"></i>
-              缩写
-            </button>
-            <button @click="expandText">
-              <i class="ri-expand-horizontal-line"></i>
-              扩写
-            </button>
-            <button @click="extendText">
-              <i class="ri-expand-right-line"></i>
-              续写
-            </button>
-          </bubble-menu>
-          <floating-menu
-            class="floating-menu"
-            :tippy-options="{ duration: 100 }"
-            :editor="editor"
+            <el-dropdown>
+              <button class="buble-btn">
+                <i class="ri-pen-nib-line"></i>
+                AI工具
+                <i class="ri-arrow-down-s-line"></i>
+              </button>
+              <template #dropdown>
+                <div>
+                  <button class="buble-btn boxbtn" @click="polishText">
+                    <i class="ri-magic-line"></i>
+                    润色
+                  </button>
+                  <button class="buble-btn boxbtn" @click="abbreviateText">
+                    <i class="ri-collapse-horizontal-line"></i>
+                    缩写
+                  </button>
+                  <button class="buble-btn boxbtn" @click="expandText">
+                    <i class="ri-expand-horizontal-line"></i>
+                    扩写
+                  </button>
+                  <button class="buble-btn boxbtn" @click="extendText">
+                    <i class="ri-expand-right-line"></i>
+                    续写
+                  </button>
+                </div>
+              </template>
+            </el-dropdown>
+            <el-dropdown>
+              <button class="buble-btn">
+                <i class="ri-translate"></i>
+                翻译
+                <i class="ri-arrow-down-s-line"></i>
+              </button>
+              <template #dropdown>
+                <div>
+                  <button class="buble-btn boxbtn" @click="translate('zh')">
+                    <i class="ri-translate-2"></i>
+                    中文
+                  </button>
+                  <button class="buble-btn boxbtn" @click="translate('en')">
+                    <i class="ri-english-input"></i>
+                    英文
+                  </button>
+                </div>
+              </template>
+            </el-dropdown>
+          </BubbleMenu>
+          <BubbleMenu
+              class="bubble-menu bm1"
+              style="font-size: small"
+              :tippy-options="{ duration: 100 }"
+              :editor="editor"
+              :should-show="props => {
+                return props.editor.isActive('image')
+            }"
           >
-            <button @click="editor.chain().focus().toggleHeading({ level: 1 }).run()" :class="{ 'is-active': editor.isActive('heading', { level: 1 }) }">
-              H1
+            <button class="buble-btn" @click="OCRImg">
+              <i class="ri-character-recognition-line"></i>
+              OCR
             </button>
-            <button @click="editor.chain().focus().toggleHeading({ level: 2 }).run()" :class="{ 'is-active': editor.isActive('heading', { level: 2 }) }">
-              H2
+            <button class="buble-btn" @click="formulaImg">
+              <i class="ri-formula"></i>
+              公式识别
             </button>
-            <button @click="editor.chain().focus().toggleBulletList().run()" :class="{ 'is-active': editor.isActive('bulletList') }">
-              Bullet list
-            </button>
-          </floating-menu>
+          </BubbleMenu>
           <editor-content :editor="editor"/>
         </div>
       </el-main>
     </el-container>
+    <AIDialog v-model:visible="AIDialogVisible"
+    :AItype="AIType" :from="editorFrom" :to="editorTo"
+    :editor="editor" ref="aiDialog"></AIDialog>
+    <imgDialog v-model:visible="OCRDialogVisible"
+    :imgAIType="imgAIType" :from="editorFrom" :to="editorTo"
+    :editor="editor" :dataUrl="imgDialogDataUrl" ref="ocrDialog"></imgDialog>
   </div>
+  <input type="file" id="fileInput" style="display: none;" @change="loadFile" accept=".json,application/json"/>
+  <input type="file" id="fileInput-Img" style="display: none;" @change="loadFileImg" accept="image/*"/>
+  <input type="file" id="fileInput-Audio" style="display: none;" @change="loadFileAudio" accept=".pcm,.wav,.amr,.m4a"/>
 </template>
 
 <script>
@@ -69,28 +114,46 @@ import FileHandler from '@tiptap-pro/extension-file-handler'
 import Mathematics from '@tiptap-pro/extension-mathematics'
 import Image from '@tiptap/extension-image'
 import { getHierarchicalIndexes, TableOfContents } from '@tiptap-pro/extension-table-of-contents'
-import {BubbleMenu, Editor, EditorContent, FloatingMenu,} from '@tiptap/vue-3'
+import {BubbleMenu, Editor, EditorContent, FloatingMenu} from '@tiptap/vue-3'
 import EditorButtons from "./EditorButtons.vue";
+import Table from '@tiptap/extension-table'
+import TableCell from '@tiptap/extension-table-cell'
+import TableHeader from '@tiptap/extension-table-header'
+import TableRow from '@tiptap/extension-table-row'
+import Document from '@tiptap/extension-document'
+import Gapcursor from '@tiptap/extension-gapcursor'
+import Paragraph from '@tiptap/extension-paragraph'
 
-import {getPolish, getAbbreviate, getExpand, getExtend} from "../api/";
+import showdown from 'showdown'
+
+import AIDialog from './AIDialog.vue'
+import imgDialog from './imgDialog.vue'
 
 import 'remixicon/fonts/remixicon.css'
 import 'katex/dist/katex.min.css'
 
 export default {
   components: {
+    AIDialog,
+    imgDialog,
     EditorButtons,
     EditorContent,
     BubbleMenu,
     FloatingMenu,
   },
-
   data() {
     return {
       editor: null,
+      AIDialogVisible: false,
+      AIType: "缩写",
+      OCRDialogVisible: false,
+      imgAIType: "OCR",
+      editorFrom: 1,
+      editorTo: 1,
+      imgDialogDataUrl: "",
+      mdConverter: new showdown.Converter(),
     }
   },
-
   mounted() {
     this.editor = new Editor({
       extensions: [
@@ -109,12 +172,18 @@ export default {
         Typography,
         Underline,
         Image,
+        Table.configure({
+          resizable: true,
+        }),
+        TableRow,
+        TableHeader,
+        TableCell,
+        Text,
         TableOfContents.configure({
           getIndex: getHierarchicalIndexes,
           onUpdate: (anchors) => {
             let tocElement = document.getElementById("table-of-contents");
             tocElement.innerHTML = '';
-            console.log(anchors)
 
             anchors.forEach((anchor) => {
               const anchorElement = document.createElement('div');
@@ -124,12 +193,12 @@ export default {
               anchorElement.dataset.depth = anchor.originalLevel
               // anchorElement.dataset.active = anchor.active
               // anchorElement.dataset.scrolled = anchor.scrolled
-              
+
               const aElement = document.createElement('a');
               aElement.innerHTML = anchor.itemIndex + ". " + anchor.textContent;
               aElement.href = "#" + anchor.id;
               aElement.style = "color: var(--black)"
-              
+
               anchorElement.appendChild(aElement);
               tocElement.appendChild(anchorElement);
             })
@@ -178,113 +247,243 @@ export default {
       ],
     })
   },
-
   beforeUnmount() {
     this.editor.destroy()
   },
-
   methods: {
-    polishText() {
-      // 确保编辑器有选中的文本
-      if (!this.editor.state.selection.empty) {
-        this.editor.setEditable(false);
-
-        const { view, state } = this.editor
-        const { from, to } = view.state.selection
-
-        const text = state.doc.textBetween(from, to, '');
-
-        let response = getPolish("test","test",text);
-        console.log(response);
-        console.log(from);
-        response.then(
-            res => {
-              const newText = res?.answer;
-              if (newText) {
-                this.editor.chain().focus().insertContentAt({from, to}, newText).run();
-              }
-              this.editor.setEditable(true);
-            }
-        )
+    handleChildEvent(payload) {
+      switch(payload) {
+        case 'exportJson':{
+          const jsonData = this.editor.getJSON()
+          const jsonBlob = new Blob([JSON.stringify(jsonData, null, 2)], { type: "application/json" });
+          const downloadElem = document.createElement("a");
+          const url = URL.createObjectURL(jsonBlob);
+          document.body.appendChild(downloadElem);
+          downloadElem.href = url;
+          downloadElem.download = "doc.json";
+          downloadElem.click();
+          downloadElem.remove();
+          window.URL.revokeObjectURL(url);
+        }
+          break;
+        case 'exportHTML':{
+          const htmlData = this.editor.getHTML()
+          const htmlBlob = new Blob([htmlData], { type: "text/html" });
+          const downloadElem = document.createElement("a");
+          const url = URL.createObjectURL(htmlBlob);
+          document.body.appendChild(downloadElem);
+          downloadElem.href = url;
+          downloadElem.download = "doc.html";
+          downloadElem.click();
+          downloadElem.remove();
+          window.URL.revokeObjectURL(url);
+        }
+          break;
+        case 'importJson':{
+          const fileInput = document.getElementById("fileInput");
+          fileInput.value = "";
+          fileInput.click();
+        }
+          break
+        case 'exportMarkdown':{
+          const mdText = this.mdConverter.makeMarkdown(this.editor.getHTML())
+          const mdBlob = new Blob([mdText], { type: "text/markdown" });
+          const downloadElem = document.createElement("a");
+          const url = URL.createObjectURL(mdBlob);
+          document.body.appendChild(downloadElem);
+          downloadElem.href = url;
+          downloadElem.download = "doc.md";
+          downloadElem.click();
+          downloadElem.remove();
+          window.URL.revokeObjectURL(url);
+        }
+          break
+        case '润色':
+          this.polishText()
+          break
+        case '缩写':
+          this.abbreviateText()
+          break
+        case '扩写':
+          this.expandText()
+          break;
+        case '续写':
+          this.extendText()
+          break;
+        case '翻译为中文':
+          this.translate('zh')
+          break;
+        case '翻译为英文':
+          this.translate('en')
+          break
+        case 'OCR':
+          this.OCRImg()
+          break;
+        case '公式识别':
+          this.formulaImg()
+          break;
+        case '插入图片':{
+          const fileInput = document.getElementById("fileInput-Img");
+          fileInput.value = "";
+          fileInput.click();
+        }
+          break
+        case '音频转文本':{
+          const fileInput = document.getElementById("fileInput-Audio");
+          fileInput.value = "";
+          fileInput.click();
+        }
+          break
+        default:
+          console.log(`Sorry, we are out of ${payload}.`);
       }
+    },
+    loadFile(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          this.editor.commands.setContent(JSON.parse(e.target.result))
+        };
+        reader.readAsText(file);
+      }
+    },
+    loadFileImg(event){
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          this.editor.chain().insertContent({
+            type: 'image',
+            attrs: {
+              src: e.target.result
+            },
+          }).focus().run()
+        };
+        reader.readAsDataURL(file)
+      }
+    },
+    loadFileAudio(event){
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          this.imgAIType = "语音转文字"
+          const dataUrl = e.target.result
+          if (dataUrl === "") {
+            return
+          }
+          this.imgDialogDataUrl = dataUrl
+          this.$nextTick(() => {
+            this.showImgDialog()
+          })
+        };
+        reader.readAsDataURL(file)
+      }
+    },
+    polishText() {
+      this.AIType = "润色"
+      this.$nextTick(() => {
+        this.showDialog()
+      })
     },
     abbreviateText() {
-      // 确保编辑器有选中的文本
-      if (!this.editor.state.selection.empty) {
-        this.editor.setEditable(false);
-
-        const { view, state } = this.editor
-        const { from, to } = view.state.selection
-
-        const text = state.doc.textBetween(from, to, '');
-
-        let response = getAbbreviate("test","test",text);
-        console.log(response);
-        console.log(from);
-        response.then(
-            res => {
-              const newText = res?.answer;
-              if (newText) {
-                this.editor.chain().focus().insertContentAt({from, to}, newText).run();
-              }
-              this.editor.setEditable(true);
-            }
-        )
-      }
+      this.AIType = "缩写"
+      this.$nextTick(() => {
+        this.showDialog()
+      })
     },
     expandText() {
-      // 确保编辑器有选中的文本
-      if (!this.editor.state.selection.empty) {
-        this.editor.setEditable(false);
-
-        const { view, state } = this.editor
-        const { from, to } = view.state.selection
-
-        const text = state.doc.textBetween(from, to, '');
-
-        let response = getExpand("test","test",text);
-        console.log(response);
-        console.log(from);
-        response.then(
-            res => {
-              const newText = res?.answer;
-              if (newText) {
-                this.editor.chain().focus().insertContentAt({from, to}, newText).run();
-              }
-              this.editor.setEditable(true);
-            }
-        )
-      }
+      this.AIType = "扩写"
+      this.$nextTick(() => {
+        this.showDialog()
+      })
     },
     extendText() {
-      // 确保编辑器有选中的文本
-      if (!this.editor.state.selection.empty) {
-        this.editor.setEditable(false);
-
-        const { view, state } = this.editor
-        const { from, to } = view.state.selection
-
-        const text = state.doc.textBetween(from, to, '');
-
-        let response = getExtend("test","test",text);
-        console.log(response);
-        console.log(from);
-        response.then(
-            res => {
-              const newText = res?.answer;
-              if (newText) {
-                this.editor.chain().focus().insertContentAt(to, newText).run();
-              }
-              this.editor.setEditable(true);
-            }
-        )
-      }
+      this.AIType = "续写"
+      this.$nextTick(() => {
+        this.showDialog()
+      })
     },
+    translate(type) {
+      if (type === "en"){
+        this.AIType = "翻译为英文"
+      }
+      else{
+        this.AIType = "翻译为中文"
+      }
+      this.$nextTick(() => {
+        this.showDialog()
+      })
+    },
+    showDialog() {
+      this.AIDialogVisible = true
+      const { view, state } = this.editor
+      const { from, to } = view.state.selection
+      const contents = state.doc.slice(from, to).content;
+      this.editor.chain().focus(from).run()
+      this.editorFrom = from
+      this.editorTo = to
+      this.$nextTick(() => {
+        this.$refs.aiDialog.setLeftHtml(contents)
+        this.$refs.aiDialog.generateText()
+      })
+    },
+    OCRImg() {
+      this.imgAIType = "OCR"
+      const dataUrl = this.getDataUrl()
+      if (dataUrl === "") {
+        return
+      }
+      this.imgDialogDataUrl = dataUrl
+      this.$nextTick(() => {
+        this.showImgDialog()
+      })
+    },
+    formulaImg() {
+      this.imgAIType = "公式识别"
+      const dataUrl = this.getDataUrl()
+      if (dataUrl === "") {
+        return
+      }
+      this.imgDialogDataUrl = dataUrl
+      this.$nextTick(() => {
+        this.showImgDialog()
+      })
+    },
+    getDataUrl() {
+      const { view, state } = this.editor
+      const { from, to } = view.state.selection
+      const contents = state.doc.slice(from, to).content;
+      if (contents.size !== 1) {
+        return ""
+      }
+      const temp = contents.content[0]
+      if (temp.type.name !== "image"){
+        return ""
+      }
+      return temp.attrs.src
+    },
+    showImgDialog() {
+      this.OCRDialogVisible = true
+      const { view, state } = this.editor
+      const { from, to } = view.state.selection
+      this.editor.chain().focus(from).run()
+      this.editorFrom = from
+      this.editorTo = to
+      this.$nextTick(() => {
+        this.$refs.ocrDialog.getText()
+      })
+    }
   },
 }
 </script>
 
 <style lang="scss">
+
+$control-group-height: 120px;
+$title-of-contents-height: 46.8px;
+
 :root {
   --purple-light: #d3c4f3;
   --black: #000000;
@@ -323,10 +522,12 @@ export default {
 
 /* Basic editor styles */
 .tiptap {
+
+  font-synthesis: weight style;
+
   :first-child {
     margin-top: 0;
   }
-
   /* List styles */
   ul,
   ol {
@@ -432,14 +633,70 @@ export default {
     }
   }
 
-  text-align: left;
-  margin-top: 1.5em;
-  margin-bottom: 1.5em;
-  margin-left: 2em;
-  margin-right: 2em;
+  & {
+    text-align: left;
+    margin: 32px 48px;
+  }
 
   :focus{
     outline: none;
+  }
+
+  table {
+    border-collapse: collapse;
+    margin: 0;
+    overflow: hidden;
+    table-layout: fixed;
+    width: 100%;
+
+    td,
+    th {
+      border: 1px solid #999999;
+      box-sizing: border-box;
+      min-width: 1em;
+      padding: 6px 8px;
+      position: relative;
+      vertical-align: top;
+
+      > * {
+        margin-bottom: 0;
+      }
+    }
+
+    th {
+      background-color: #E5E5E5;
+      font-weight: bold;
+      text-align: left;
+    }
+
+    .selectedCell:after {
+      background: #CCCCCC;
+      content: "";
+      left: 0; right: 0; top: 0; bottom: 0;
+      pointer-events: none;
+      position: absolute;
+      z-index: -2;
+    }
+
+    .column-resize-handle {
+      background-color: #409EFF;
+      bottom: -2px;
+      pointer-events: none;
+      position: absolute;
+      right: -2px;
+      top: 0;
+      width: 4px;
+    }
+  }
+
+  .tableWrapper {
+    margin: 1.5rem 0;
+    overflow-x: auto;
+  }
+
+  &.resize-cursor {
+    cursor: ew-resize;
+    cursor: col-resize;
   }
 }
 
@@ -449,20 +706,13 @@ export default {
 
 .el-aside {
   width: 15%;
-  padding-left: 2%;
-  padding-right: 2%;
-  padding-top: 10px;
-  padding-bottom: 0px;
-  background-color: azure;
+  padding: 10px 2% 0px;
   text-align: left;
+  border-right: solid 1px var(--el-border-color);
 }
 
 .el-main {
-  padding-left: 10%;
-  padding-right: 10%;
-  padding-top: 10px;
-  padding-bottom: 0;
-  background-color: aquamarine;
+  padding: 30px 10% 20px;
 }
 
 /* Bubble menu */
@@ -474,8 +724,8 @@ export default {
   display: flex;
   padding: 0.2rem;
 
-  button {
-    background-color: unset;
+  .buble-btn {
+    background-color: #f4f4f4;
 
     &:hover {
       background-color: var(--gray-3);
@@ -519,7 +769,8 @@ export default {
 }
 
 .control-group{
-  background-color: #e3e3e3;
+  height: $control-group-height;
+  min-width: 800px;
 }
 
 #app {
@@ -530,5 +781,28 @@ export default {
 
 .editor-container {
   border: solid;
+  border-radius: 12px;
+}
+
+.main-container{
+  box-sizing: border-box;
+  height: calc(100% - $control-group-height);
+  min-width: 800px;
+}
+
+.boxbtn{
+  display: block;
+}
+
+#table-of-contents{
+  height: calc(100% - $title-of-contents-height);
+  overflow-y: auto;
+}
+
+#title-of-contents{
+  margin: 0;
+  padding-bottom: 18.72px;
+  box-sizing: border-box;
+  height: $title-of-contents-height;
 }
 </style>

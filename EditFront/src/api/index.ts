@@ -1,5 +1,47 @@
 import http from '../utils/request'
 
+export function getOCR(dataurl: string) {
+    let formData = new FormData();
+    formData.append("dataurl",dataurl);
+    return http.request({
+        url: '/ocr',
+        method: 'post',
+        data: formData
+    })
+}
+
+export function getASR(dataurl: string) {
+    let formData = new FormData();
+    formData.append("dataurl",dataurl);
+    return http.request({
+        url: '/asr',
+        method: 'post',
+        data: formData
+    })
+}
+
+export function getFormula(dataurl: string) {
+    let formData = new FormData();
+    formData.append("dataurl",dataurl);
+    return http.request({
+        url: '/formula',
+        method: 'post',
+        data: formData
+    })
+}
+
+export function getTranslate(q: string, to: string) {
+    let formData = new FormData();
+    formData.append("q",q);
+    formData.append("to",to);
+    console.log(formData)
+    return http.request({
+        url: '/translate',
+        method: 'post',
+        data: formData
+    })
+}
+
 export function adduser(username: string, password: string) {
     let formData = new FormData();
     formData.append("username",username);
@@ -16,11 +58,11 @@ export function getPolish(user:string, key: string, cont: string){
     formData.append("user", user);
     formData.append("key", key);
     formData.append("cont", cont);
-    return http.request({
-        url: '/getpolish',
+    return fetch('/api/getpolish', {
         method: 'post',
-        data: formData
-    })
+        credentials: 'include',
+        body: formData
+    });
 }
 
 export function getAbbreviate(user:string, key: string, cont: string){
@@ -28,11 +70,11 @@ export function getAbbreviate(user:string, key: string, cont: string){
     formData.append("user", user);
     formData.append("key", key);
     formData.append("cont", cont);
-    return http.request({
-        url: '/getabbreviate',
+    return fetch('/api/getabbreviate', {
         method: 'post',
-        data: formData
-    })
+        credentials: 'include',
+        body: formData
+    });
 }
 
 export function getExpand(user:string, key: string, cont: string){
@@ -40,11 +82,11 @@ export function getExpand(user:string, key: string, cont: string){
     formData.append("user", user);
     formData.append("key", key);
     formData.append("cont", cont);
-    return http.request({
-        url: '/getexpand',
+    return fetch('/api/getexpand', {
         method: 'post',
-        data: formData
-    })
+        credentials: 'include',
+        body: formData
+    });
 }
 
 export function getExtend(user:string, key: string, cont: string){
@@ -52,9 +94,9 @@ export function getExtend(user:string, key: string, cont: string){
     formData.append("user", user);
     formData.append("key", key);
     formData.append("cont", cont);
-    return http.request({
-        url: '/getextend',
+    return fetch('/api/getextend', {
         method: 'post',
-        data: formData
-    })
+        credentials: 'include',
+        body: formData
+    });
 }
