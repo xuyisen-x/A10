@@ -9,11 +9,13 @@
         <h2>登录</h2>
         <div class="form-group">
           <label for="loginUsername">用户名:</label>
-          <input type="text" id="loginUsername" v-model="loginData.username" required />
+          <el-input v-model="loginData.username" id="loginUsername" placeholder="请输入用户名" required/>
+          <!-- <input type="text" id="loginUsername" v-model="loginData.username" required /> -->
         </div>
         <div class="form-group">
           <label for="loginPassword">密码:</label>
-          <input type="password" id="loginPassword" v-model="loginData.password" required />
+          <el-input v-model="loginData.password" id="loginPassword" placeholder="请输入密码" show-password/>
+          <!-- <input type="password" id="loginPassword" v-model="loginData.password" required /> -->
         </div>
         <button type="submit">登录</button>
       </form>
@@ -21,15 +23,18 @@
         <h2>注册</h2>
         <div class="form-group">
           <label for="registerUsername">用户名:</label>
-          <input type="text" id="registerUsername" v-model="registerData.username" required />
+          <el-input v-model="registerData.username" id="registerUsername" placeholder="请输入用户名" required/>
+          <!-- <input type="text" id="registerUsername" v-model="registerData.username" required /> -->
         </div>
         <div class="form-group">
           <label for="registerPassword">密码:</label>
-          <input type="password" id="registerPassword" v-model="registerData.password" required />
+          <el-input v-model="registerData.password" id="registerPassword" placeholder="请输入密码" show-password/>
+          <!-- <input type="password" id="registerPassword" v-model="registerData.password" required /> -->
         </div>
         <div class="form-group">
   <label for="registerConfirmPassword">确认密码:</label>
-  <input type="password" id="registerConfirmPassword" v-model="registerData.confirmPassword" required />
+  <el-input v-model="registerData.confirmPassword" id="registerConfirmPassword" placeholder="请输入密码" show-password/>
+  <!-- <input type="password" id="registerConfirmPassword" v-model="registerData.password" required /> -->
   <span v-if="passwordMismatch" class="error-message">密码和确认密码不匹配</span>
         </div>
         <button type="submit">注册</button>
@@ -39,6 +44,8 @@
 </template>
 
 <script>
+import {adduser, login} from '../../api/'
+
 export default {
   name: 'AuthComponent',
   data() {
@@ -61,23 +68,38 @@ export default {
       this.isLogin = form === 'login';
     },
     handleLogin() {
-      // 处理登录逻辑，例如调用 API
       console.log('登录信息:', this.loginData);
-      // 可以在这里添加更多的验证和请求逻辑
+      let res = login(this.loginData.username,this.loginData.password)
+      res.then((res)=>{
+        if (res.success === false){
+          alert(res.notes)
+        }
+        else{
+          alert('登录成功')
+        }
+      })
     },
     handleRegister() {
-// 处理注册逻辑，例如调用 API
-  if (this.registerData.password !== this.registerData.confirmPassword) {
-  this.passwordMismatch = true;
-  return;
-  } else {
-  this.passwordMismatch = false;
-  }
+      // 处理注册逻辑，例如调用 API
+      if (this.registerData.password !== this.registerData.confirmPassword) {
+        this.passwordMismatch = true;
+        return;
+      } else {
+        this.passwordMismatch = false;
+      }
       console.log('注册信息:', this.registerData);
-      // 可以在这里添加更多的验证和请求逻辑
+      let res = adduser(this.registerData.username,this.registerData.password)
+      res.then((res)=>{
+        if (res.success === false){
+          alert(res.notes)
+        }
+        else{
+          alert('注册成功')
+        }
+      })
     }
   }
-};
+}
 </script>
 
 <style scoped>

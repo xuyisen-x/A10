@@ -53,6 +53,17 @@ export function adduser(username: string, password: string) {
     })
 }
 
+export function login(username: string, password: string) {
+    let formData = new FormData();
+    formData.append("username",username);
+    formData.append("password",password);
+    return http.request({
+        url: '/login',
+        method: 'post',
+        data: formData
+    })
+}
+
 export function getPolish(user:string, key: string, cont: string){
     let formData = new FormData();
     formData.append("user", user);
