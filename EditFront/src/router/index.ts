@@ -7,13 +7,13 @@ import {createRouter, createWebHistory, type RouteRecordRaw} from 'vue-router'
 
 const routes = [
     {
-        path: '/login',
+        path: '/',
         name: 'Home',
         component: () => import('../views/HomePage/index.vue'),
         meta: { title: '首页' }
     },
     {
-        path: '/',
+        path: '/main',
         name: 'Edit',
         component: () => import('../views/Edit/index.vue'),
         meta: { title: '编辑器' }

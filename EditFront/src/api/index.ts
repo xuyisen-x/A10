@@ -64,6 +64,20 @@ export function login(username: string, password: string) {
     })
 }
 
+export function loginAsVisitor() {
+    return http.request({
+        url: '/loginasvisitor',
+        method: 'post',
+    })
+}
+
+export function getUserName() {
+    return http.request({
+        url: '/getusername',
+        method: 'post',
+    })
+}
+
 export function getPolish(user:string, key: string, cont: string){
     let formData = new FormData();
     formData.append("user", user);

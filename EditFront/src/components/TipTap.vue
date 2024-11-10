@@ -98,6 +98,9 @@
   <input type="file" id="fileInput" style="display: none;" @change="loadFile" accept=".json,application/json"/>
   <input type="file" id="fileInput-Img" style="display: none;" @change="loadFileImg" accept="image/*"/>
   <input type="file" id="fileInput-Audio" style="display: none;" @change="loadFileAudio" accept=".pcm,.wav,.amr,.m4a"/>
+  <div class="user-info">
+      <span>当前用户: {{ username }}</span>
+    </div>
 </template>
 
 <script>
@@ -123,6 +126,8 @@ import TableRow from '@tiptap/extension-table-row'
 import Document from '@tiptap/extension-document'
 import Gapcursor from '@tiptap/extension-gapcursor'
 import Paragraph from '@tiptap/extension-paragraph'
+
+import {getUserName} from "../api/"
 
 import showdown from 'showdown'
 
@@ -152,6 +157,7 @@ export default {
       editorTo: 1,
       imgDialogDataUrl: "",
       mdConverter: new showdown.Converter(),
+      username: "unknown"
     }
   },
   mounted() {
@@ -245,6 +251,15 @@ export default {
           },
         }),
       ],
+    })
+    let resUserName = getUserName()
+    resUserName.then((res)=>{
+      if (res.success === false){
+        this.username = "未登录"
+      }
+      else{
+        this.username = res.username
+      }
     })
   },
   beforeUnmount() {
@@ -804,5 +819,14 @@ $title-of-contents-height: 46.8px;
   padding-bottom: 18.72px;
   box-sizing: border-box;
   height: $title-of-contents-height;
+}
+
+.user-info{
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  padding: 10px;
+  background-color: #f4f4f4;
+  border-radius: 5px;
 }
 </style>

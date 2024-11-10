@@ -4,7 +4,7 @@ import uuid
 from argon2 import PasswordHasher
 import atexit
 
-from flask import Blueprint, request, Response, jsonify, g
+from flask import Blueprint, request, Response, jsonify, g, session
 user_bp = Blueprint('user', __name__)
 
 # 初始化密码哈希
@@ -23,12 +23,6 @@ def get_db():
         print("connect db")
         g.db = mysql.connect(**db_config)
     return g.db
-@user_bp.teardown_app_request
-def close_db(error):
-    db = g.pop('db', None)
-    if db is not None:
-        print("close db")
-        db.close()
 
 def checkUser(username):
     conn = get_db()
@@ -102,5 +96,20 @@ def login():
     except:
         return jsonify({'success': False, 'notes': '密码错误'})
 
+    session['username'] = username
     # 如果验证通过，返回登录成功信息
     return jsonify({'success': True, 'notes': '登录成功'})
+
+@user_bp.route('/loginasvisitor', methods=['POST'])
+def loginasvisitor():
+    if 'username' in session:
+        # 删除已登录用户的session
+        session.pop('username')
+    return jsonify({'success': True, 'notes': '登录成功'})
+
+@user_bp.route('/getusername', methods=['POST'])
+def getusername():
+    if 'username' in session:
+        return jsonify({'success': True, 'username': session['username']})
+    else:
+        return jsonify({'success': False, 'notes': '未登录'})

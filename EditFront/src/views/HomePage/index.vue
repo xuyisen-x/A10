@@ -9,7 +9,7 @@
         <h2>登录</h2>
         <div class="form-group">
           <label for="loginUsername">用户名:</label>
-          <el-input v-model="loginData.username" id="loginUsername" placeholder="请输入用户名" required/>
+          <el-input v-model="loginData.username" id="loginUsername" placeholder="请输入用户名"/>
           <!-- <input type="text" id="loginUsername" v-model="loginData.username" required /> -->
         </div>
         <div class="form-group">
@@ -17,7 +17,7 @@
           <el-input v-model="loginData.password" id="loginPassword" placeholder="请输入密码" show-password/>
           <!-- <input type="password" id="loginPassword" v-model="loginData.password" required /> -->
         </div>
-        <button type="submit">登录</button>
+        <button type="submit">{{ isGuestLogin ? '以游客身份登录' : '登录' }}</button>
       </form>
       <form v-else @submit.prevent="handleRegister">
         <h2>注册</h2>
@@ -44,7 +44,7 @@
 </template>
 
 <script>
-import {adduser, login} from '../../api/'
+import {adduser, login, loginAsVisitor} from '../../api/'
 
 export default {
   name: 'AuthComponent',
@@ -63,19 +63,31 @@ export default {
       }
     };
   },
+  computed: {
+    // 判断用户名和密码是否为空
+    isGuestLogin() {
+      return !this.loginData.username && !this.loginData.password;
+    }
+  },
   methods: {
     toggleForm(form) {
       this.isLogin = form === 'login';
     },
     handleLogin() {
       console.log('登录信息:', this.loginData);
-      let res = login(this.loginData.username,this.loginData.password)
+      if (!this.loginData.username && !this.loginData.password){
+        var res = loginAsVisitor()
+      }
+      else
+      {
+        var res = login(this.loginData.username,this.loginData.password)
+      }
       res.then((res)=>{
         if (res.success === false){
           alert(res.notes)
         }
         else{
-          alert('登录成功')
+          this.$router.push('/main');
         }
       })
     },
